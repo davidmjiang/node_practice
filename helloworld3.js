@@ -1,13 +1,21 @@
 "use strict";
 //function to read our files
 function readFile(filename){
-	//creates an empty sequence
-	var sq = ASQ();
-	
-	//sq generates an error-first callback
-	fs.readFile(filename, sq.errfcb() );
+	return ASQ(function(done){
+		var stream = fs.createReadStream(filename);
+		var contents = "";
 
-	return sq;
+		//streams can be piped
+		stream.pipe( fs.createWriteStream(filename + ".backup"));
+
+		//event listener
+		stream.on("data", function(chunk){
+			contents += chunk;
+		});
+		stream.on("end", function(){
+			done(contents);
+		});
+	});
 }
 
 function delayMsg(done, contents){
